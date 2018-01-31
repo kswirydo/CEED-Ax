@@ -29,7 +29,7 @@ int main(int argc, char **argv){
 
   // default to 512 elements if no arg is given
   int E = (argc>=2) ? atoi(argv[1]):512;
-  int p_N = (argc>=3) ? atoi(argv[2]):15;
+  int p_N = (argc>=3) ? atoi(argv[2]):5;
   int p_gjNq = (p_N+2); 
 
   int p_gjNq2  = ((p_N+2)*(p_N+2));
