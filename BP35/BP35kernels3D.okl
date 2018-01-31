@@ -1,7 +1,7 @@
 #define cubeThreads                             \
-  for(int k=0; k<p_Ngll; ++k; inner2)            \
-for(int j=0; j<p_Ngll; ++j; inner1)          \
-for(int i=0; i<p_Ngll; ++i; inner0)
+  for(int k=0; k<p_Ngll; ++k; inner2)		\
+    for(int j=0; j<p_Ngll; ++j; inner1)		\
+      for(int i=0; i<p_Ngll; ++i; inner0)
 
 #if p_Ngll==8 || p_Ngll==16
 #define p_gllPad 1
@@ -20,12 +20,12 @@ for(int i=0; i<p_Ngll; ++i; inner0)
 // Kernel 1 - unoptimized baseline kernel
 
 kernel void ellipticAxHex3D_Ref3D1(int Nelements,
-    datafloat * ggeo,
-    datafloat *  D,
-    datafloat lambda,
-    datafloat *  q,
-    datafloat *  Aq,
-    datafloat * Aqtemp){
+				   datafloat * ggeo,
+				   datafloat *  D,
+				   datafloat lambda,
+				   datafloat *  q,
+				   datafloat *  Aq,
+				   datafloat * Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -136,12 +136,12 @@ kernel void ellipticAxHex3D_Ref3D1(int Nelements,
 // Kernel 2 - const. variables and loop unrolling
 
 kernel void ellipticAxHex3D_Ref3D2(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -257,12 +257,12 @@ kernel void ellipticAxHex3D_Ref3D2(const int Nelements,
 // Kernel 3 - geometric factors in registers, fetched only once
 
 kernel void ellipticAxHex3D_Ref3D3(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -362,12 +362,12 @@ kernel void ellipticAxHex3D_Ref3D3(const int Nelements,
 // Kernel 4 - less global storage
 
 kernel void ellipticAxHex3D_Ref3D4(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -468,12 +468,12 @@ kernel void ellipticAxHex3D_Ref3D4(const int Nelements,
 // Kernel 5 - q in shared
 
 kernel void ellipticAxHex3D_Ref3D5(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -589,12 +589,12 @@ kernel void ellipticAxHex3D_Ref3D5(const int Nelements,
 // Kernel 6 - multiple shared arrays
 
 kernel void ellipticAxHex3D_Ref3D6(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 

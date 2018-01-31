@@ -72,6 +72,8 @@ int main(int argc, char **argv){
   occa::memory o_geo, o_u, o_Mu, o_D,o_I,  o_Mutemp, o_Mutemp2,o_Mutemp3;
   occa::kernelInfo kernelInfo;
 
+  // specify device configuration
+  
   // device.setup("mode = Serial");
   // device.setup("mode = OpenMP  , schedule = compact, chunk = 10");
   // device.setup("mode = OpenCL  , platformID = 0, deviceID = 0");
@@ -79,6 +81,7 @@ int main(int argc, char **argv){
   // device.setup("mode = Pthreads, threadCount = 4, schedule = compact, pinnedCores = [0, 0, 1, 1]");
   // device.setup("mode = COI     , deviceID = 0");
 
+  // compiler variables to be passed to backend compiler by OCCA
   kernelInfo.addDefine("datafloat", datafloatString);
   kernelInfo.addDefine("p_N", p_N);
   kernelInfo.addDefine("p_gjNq", p_gjNq);
@@ -123,6 +126,7 @@ int main(int argc, char **argv){
   }
 
   o_I = device.malloc(p_gjNq*p_Nq*sizeof(datafloat), I);
+
   // initialize timer
   occa::initTimer(device);
 
@@ -131,6 +135,7 @@ int main(int argc, char **argv){
     datafloat lambda = 1.;
     occa::streamTag startTag = device.tagStream();
 
+    // launch kernel
     for(it=0;it<Niter;++it){  
       BP1kernel[i-1](E,o_geo,o_I, o_u, o_Mu,o_Mutemp, o_Mutemp2, o_Mutemp3);
     }
@@ -143,7 +148,8 @@ int main(int argc, char **argv){
 
     results2D[i-1] = E*gflops/(elapsed*1000*1000*1000);
     printf("OCCA: estimated gflops = %17.15f\n", results2D[i-1]);
-    printf("OCCA estimated bandwidth = %17.15f GB/s\n", sizeof(datafloat)*Niter*E*(2.*p_Nq*p_Nq*p_Nq + 1.*p_gjNq*p_gjNq*p_gjNq)/(elapsed*1024.*1024.*1024));
+    printf("OCCA estimated bandwidth = %17.15f GB/s\n",
+	   sizeof(datafloat)*Niter*E*(2.*p_Nq*p_Nq*p_Nq + 1.*p_gjNq*p_gjNq*p_gjNq)/(elapsed*1024.*1024.*1024));
 
     // compute l2 of data
     o_Mu.copyTo(Mu);

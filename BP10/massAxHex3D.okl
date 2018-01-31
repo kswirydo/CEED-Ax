@@ -19,19 +19,19 @@
 // kernel 1: reference kernel; no unrolling anywhere and no padding, no const, no compiler variables
 
 kernel void massPartialAxHex3D_Ref1(int Nelements,
-    datafloat * gjGeo,
-    datafloat *  gjI,
-    datafloat *  q,
-    datafloat *  Mq,
-    datafloat * qtmp,
-    datafloat * qtmp2,
-    datafloat * qtmp3){
+				    datafloat * gjGeo,
+				    datafloat *  gjI,
+				    datafloat *  q,
+				    datafloat *  Mq,
+				    datafloat * qtmp,
+				    datafloat * qtmp2,
+				    datafloat * qtmp3){
 
   for(int e=0;e<Nelements;++e;outer0){
    
- shared datafloat s_I[p_gjNq][p_gjNq];
+    shared datafloat s_I[p_gjNq][p_gjNq];
     
-for(int b=0;b<p_gjNq;++b;inner1){
+    for(int b=0;b<p_gjNq;++b;inner1){
       for(int a=0;a<p_gjNq;++a;inner0){
 
         if(a<p_Nq)
@@ -40,7 +40,7 @@ for(int b=0;b<p_gjNq;++b;inner1){
         for(int c=0;c<p_gjNq;++c){
 
           
-qtmp[e*p_gjNp+c*p_gjNq2+b*p_gjNq+a] =0.0f;
+	  qtmp[e*p_gjNp+c*p_gjNq2+b*p_gjNq+a] =0.0f;
           qtmp2[e*p_gjNp+c*p_gjNq2+b*p_gjNq+a] =0.0f;
           qtmp3[e*p_gjNp+c*p_gjNq2+b*p_gjNq+a] =0.0f;
 
@@ -159,10 +159,10 @@ qtmp[e*p_gjNp+c*p_gjNq2+b*p_gjNq+a] =0.0f;
 //Kernel 2 
 
 kernel void massPartialAxHex3D_Ref2(int Nelements,
-    datafloat * gjGeo,
-    datafloat *  gjI,
-    datafloat *  q,
-    datafloat *  Mq){
+				    datafloat * gjGeo,
+				    datafloat *  gjI,
+				    datafloat *  q,
+				    datafloat *  Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -287,10 +287,10 @@ kernel void massPartialAxHex3D_Ref2(int Nelements,
 // Kernel 3
 
 kernel void massPartialAxHex3D_Ref3(int Nelements,
-    datafloat * gjGeo,
-    datafloat *  gjI,
-    datafloat *  q,
-    datafloat *  Mq){
+				    datafloat * gjGeo,
+				    datafloat *  gjI,
+				    datafloat *  q,
+				    datafloat *  Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -455,10 +455,10 @@ kernel void massPartialAxHex3D_Ref3(int Nelements,
 //Kernel 6
 
 kernel void massPartialAxHex3D_Ref6(const int Nelements,
-    const datafloat * gjGeo,
-    const datafloat *  gjI,
-    const datafloat *  q,
-    datafloat *  Mq){
+				    const datafloat * gjGeo,
+				    const datafloat *  gjI,
+				    const datafloat *  q,
+				    datafloat *  Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -627,10 +627,10 @@ kernel void massPartialAxHex3D_Ref6(const int Nelements,
 //Kernel 7 
 
 kernel void massPartialAxHex3D_Ref7(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gjI,
-    const datafloat * restrict q,
-    datafloat * restrict Mq){
+				    const datafloat * restrict gjGeo,
+				    const datafloat * restrict gjI,
+				    const datafloat * restrict q,
+				    datafloat * restrict Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -820,10 +820,10 @@ kernel void massPartialAxHex3D_Ref7(const int Nelements,
 //Kernel 8
 
 kernel void massPartialAxHex3D_Ref8(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gjI,
-    const datafloat * restrict q,
-    datafloat * restrict Mq){
+				    const datafloat * restrict gjGeo,
+				    const datafloat * restrict gjI,
+				    const datafloat * restrict q,
+				    datafloat * restrict Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -1055,10 +1055,10 @@ kernel void massPartialAxHex3D_Ref8(const int Nelements,
 //Kernel 5
 
 kernel void massPartialAxHex3D_Ref5(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gjI,
-    const datafloat * restrict q,
-    datafloat * restrict Mq){
+				    const datafloat * restrict gjGeo,
+				    const datafloat * restrict gjI,
+				    const datafloat * restrict q,
+				    datafloat * restrict Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -1226,10 +1226,10 @@ kernel void massPartialAxHex3D_Ref5(const int Nelements,
 //Kernel 4
 
 kernel void massPartialAxHex3D_Ref4(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gjI,
-    const datafloat * restrict q,
-    datafloat * restrict Mq){
+				    const datafloat * restrict gjGeo,
+				    const datafloat * restrict gjI,
+				    const datafloat * restrict q,
+				    datafloat * restrict Mq){
 
   for(int e=0;e<Nelements;++e;outer0){
 
@@ -1382,7 +1382,7 @@ kernel void massPartialAxHex3D_Ref4(const int Nelements,
 
           for(int c=0;c<p_Nq;++c){
 
-          const int id = e*p_Np + c*p_Nq2 + b*p_Nq + a;
+	    const int id = e*p_Np + c*p_Nq2 + b*p_Nq + a;
             Mq[id] = r_Mq[c];
           }
         }

@@ -13,13 +13,13 @@
 // Kernel 1 - unoptimized kernel, run as 3 cuda kernels
 
 kernel void ellipticAxHex3D_Ref3D1( int Nelements,
-    datafloat *gjGeo,
-    datafloat *  gllD,
-    datafloat *  gjI,
-    datafloat lambda,
-    datafloat * q,
-    datafloat * Ixq,
-    datafloat *  Aq){
+				    datafloat *gjGeo,
+				    datafloat *  gllD,
+				    datafloat *  gjI,
+				    datafloat lambda,
+				    datafloat * q,
+				    datafloat * Ixq,
+				    datafloat *  Aq){
 
   for(int e=0; e<Nelements; ++e; outer0) {
     shared datafloat s_gsI[p_gjNq][p_Nq];
@@ -393,14 +393,14 @@ kernel void ellipticAxHex3D_Ref3D1( int Nelements,
 // Kernel 2 - 1 kernel version of Kernel 1
 
 kernel void ellipticAxHex3D_Ref3D2( int Nelements,
-    datafloat *gjGeo,
-    datafloat *  gllD,
-    datafloat *  gjI,
-    datafloat lambda,
-    datafloat * q,
-    datafloat * Ixq,
-    datafloat *  Aq,
-    datafloat * Aqres){
+				    datafloat *gjGeo,
+				    datafloat *  gllD,
+				    datafloat *  gjI,
+				    datafloat lambda,
+				    datafloat * q,
+				    datafloat * Ixq,
+				    datafloat *  Aq,
+				    datafloat * Aqres){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -754,14 +754,14 @@ kernel void ellipticAxHex3D_Ref3D2( int Nelements,
 // Kernel 3 -  const variables, loop unrolling
 
 kernel void ellipticAxHex3D_Ref3D3(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq,
-    datafloat * Aqres){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq,
+				   datafloat * Aqres){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -1117,14 +1117,14 @@ kernel void ellipticAxHex3D_Ref3D3(const int Nelements,
 // Kernel 4 - load geometric factors to registers.
 
 kernel void ellipticAxHex3D_Ref3D4(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq,
-    datafloat * Aqres){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq,
+				   datafloat * Aqres){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -1486,14 +1486,14 @@ kernel void ellipticAxHex3D_Ref3D4(const int Nelements,
 // Kernel 5 - restructure shared memory
 
 kernel void ellipticAxHex3D_Ref3D5(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq,
-    datafloat * Aqres){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq,
+				   datafloat * Aqres){
 
   //kernel 1 - interpolate to gj hex
   for(int e=0; e<Nelements; ++e; outer0) {
@@ -1841,14 +1841,14 @@ kernel void ellipticAxHex3D_Ref3D5(const int Nelements,
 // Kernel 6 -  register variable instead of global load in differentiation
 
 kernel void ellipticAxHex3D_Ref3D6(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqres){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqres){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -2193,13 +2193,13 @@ kernel void ellipticAxHex3D_Ref3D6(const int Nelements,
 // Kernel 7 - global storage only BETWEEN parts
 
 kernel void ellipticAxHex3D_Ref3D7(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -2559,13 +2559,13 @@ kernel void ellipticAxHex3D_Ref3D7(const int Nelements,
 // Kernel 8 - no global storage
 
 kernel void ellipticAxHex3D_Ref3D8(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -2919,13 +2919,13 @@ kernel void ellipticAxHex3D_Ref3D8(const int Nelements,
 // Kernel 9 - all partial results are stored in the shared memory
 
 kernel void ellipticAxHex3D_Ref3D9(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq){
+				   const datafloat * restrict gjGeo,
+				   const datafloat * restrict gllD,
+				   const datafloat * restrict gjI,
+				   const datafloat lambda,
+				   datafloat * restrict q,
+				   datafloat * restrict Ixq,
+				   datafloat * restrict Aq){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 
@@ -3159,13 +3159,13 @@ kernel void ellipticAxHex3D_Ref3D9(const int Nelements,
 // for refeence and testing
 
 kernel void ellipticAxHex3D_e9(const int Nelements,
-    const datafloat * restrict gjGeo,
-    const datafloat * restrict gllD,
-    const datafloat * restrict gjI,
-    const datafloat lambda,
-    datafloat * restrict q,
-    datafloat * restrict Ixq,
-    datafloat * restrict Aq){
+			       const datafloat * restrict gjGeo,
+			       const datafloat * restrict gllD,
+			       const datafloat * restrict gjI,
+			       const datafloat lambda,
+			       datafloat * restrict q,
+			       datafloat * restrict Ixq,
+			       datafloat * restrict Aq){
 
   for(int e=0; e<Nelements; ++e; outer0) {
 

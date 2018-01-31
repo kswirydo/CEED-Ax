@@ -15,12 +15,12 @@
 // Kernel 1 - no optimization
 
 kernel void ellipticAxHex3D_Ref2D1(int Nelements,
-    datafloat * ggeo,
-    datafloat *  D,
-    datafloat lambda,
-    datafloat *  q,
-    datafloat *  Aq,
-    datafloat * Aqtemp){
+				   datafloat * ggeo,
+				   datafloat *  D,
+				   datafloat lambda,
+				   datafloat *  q,
+				   datafloat *  Aq,
+				   datafloat * Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -127,12 +127,12 @@ kernel void ellipticAxHex3D_Ref2D1(int Nelements,
 // Kernel 2 - Kernel 1 + const. variables
 
 kernel void ellipticAxHex3D_Ref2D3(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -241,12 +241,12 @@ kernel void ellipticAxHex3D_Ref2D3(const int Nelements,
 //Kernel 3 - Kernel 2 + unrolling
 
 kernel void ellipticAxHex3D_Ref2D2(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -360,12 +360,12 @@ kernel void ellipticAxHex3D_Ref2D2(const int Nelements,
 // Kernel 4 - Kernel 3 + maink-loop is external
 
 kernel void ellipticAxHex3D_Ref2D4(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -479,12 +479,12 @@ kernel void ellipticAxHex3D_Ref2D4(const int Nelements,
 // Kernel 5 - 2D shared memory
 
 kernel void ellipticAxHex3D_Ref2D5(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -600,12 +600,12 @@ kernel void ellipticAxHex3D_Ref2D5(const int Nelements,
 // Kernel 6 - q in shared memory
 
 kernel void ellipticAxHex3D_Ref2D6(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -716,12 +716,12 @@ kernel void ellipticAxHex3D_Ref2D6(const int Nelements,
 // Kernel 7 - eliminate global storage
 
 kernel void ellipticAxHex3D_Ref2D7(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -823,12 +823,12 @@ kernel void ellipticAxHex3D_Ref2D7(const int Nelements,
 // Kernel 8 - Kernel 6 + padding
 
 kernel void ellipticAxHex3D_Ref2D8(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -928,12 +928,12 @@ kernel void ellipticAxHex3D_Ref2D8(const int Nelements,
 // Kernel 9 - padding, parts of q fetched to registers
 
 kernel void ellipticAxHex3D_Ref2D9(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
@@ -1066,12 +1066,12 @@ kernel void ellipticAxHex3D_Ref2D9(const int Nelements,
 // Kernel 10 - fully optimized version, only 2D shared (TW)
 
 kernel void ellipticAxHex3D_Ref2D10(const int Nelements,
-    const datafloat * restrict ggeo,
-    const datafloat * restrict D,
-    const datafloat lambda,
-    const datafloat * restrict q,
-    datafloat * restrict Aq,
-    datafloat * restrict Aqtemp){
+				    const datafloat * restrict ggeo,
+				    const datafloat * restrict D,
+				    const datafloat lambda,
+				    const datafloat * restrict q,
+				    datafloat * restrict Aq,
+				    datafloat * restrict Aqtemp){
 
   for(int e=0; e<Nelements; ++e; outer0){
 
