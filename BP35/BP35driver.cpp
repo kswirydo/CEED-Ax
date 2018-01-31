@@ -3,13 +3,6 @@
 #include "occa.hpp"
 #include <math.h>
 
-// make
-
-// to scan through polynomial degree N
-// for N in `seq 1 15`; do ./Ax 4096 $N; done
-
-// type of variables
-//KS: started Oct 29th 2017
 #if 1
 #define datafloat double
 #define datafloatString "double"
@@ -17,7 +10,6 @@
 #define datafloat float
 #define datafloatString "float"
 #endif
-// polynomial degree
 
 void randCalloc(occa::device &device, int sz, datafloat **pt, occa::memory &o_pt){
 
@@ -30,7 +22,6 @@ void randCalloc(occa::device &device, int sz, datafloat **pt, occa::memory &o_pt
   }
 
   o_pt = device.malloc(sz*sizeof(datafloat), *pt);
-
 }
 
 int main(int argc, char **argv){
@@ -40,28 +31,22 @@ int main(int argc, char **argv){
   int p_N = (argc>=3) ? atoi(argv[2]):15;
   int p_Ngll = (p_N+1); // number of nodes in each direction
 
-  // number of nodes in layer
   int p_Ngll2  = ((p_N+1)*(p_N+1));
   int BLK = 1;
   int BSIZE  = (p_Ngll*p_Ngll*p_Ngll);
+
   // number of geometric factors
   int Ngeo =  7;
 
   int pad;
-  // tweak shared padding to avoid bank conflicts
-  if ((p_Ngll==8) || (p_Ngll==16))
-    pad = 1;
-  else
-    pad = 0;
 
+  // tweak shared padding to avoid bank conflicts
   if ((p_Ngll%2)==0)
     pad = 1;
   else
     pad = 0;
 
-  printf("E=%d, N=%d, Ngll=%d\n", E, p_N, p_Ngll);
-
-  // build some dummy storage & parameters
+  datafloat lambda = 1.;
   datafloat *geo, *u, *Au, *D, *Autemp;
 
   occa::device device;
@@ -72,7 +57,8 @@ int main(int argc, char **argv){
 
   double results2D[10];
   double  results3D[6];
-  //device.setup("mode = Serial");
+
+  // device.setup("mode = Serial");
   // device.setup("mode = OpenMP  , schedule = compact, chunk = 10");
   //  device.setup("mode = OpenCL  , platformID = 0, deviceID = 1");
   device.setup("mode = CUDA    , deviceID = 0");
@@ -88,31 +74,24 @@ int main(int argc, char **argv){
   kernelInfo.addDefine("p_Np", BSIZE);
   kernelInfo.addDefine("pad", pad);
 
-  printf("BSIZE=%d\n", BSIZE);
-
-
-
-
   char buf[200];
-  for (int i =1; i<11; i++)
-  {
-    sprintf(buf, "ellipticAxHex3D_Ref2D%d", i); // puts string into buffer
+  for (int i =1; i<11; i++){
+
+    sprintf(buf, "ellipticAxHex3D_Ref2D%d", i);
     BP35kernel[i-1] = device.buildKernelFromSource("BP35kernels2D.okl", buf, kernelInfo);
-    //  printf("%s\n", buf); // outputs so you can see it
   }
 
-  if (p_Ngll<11)
-  {
-    for (int i =1; i<7; i++)
-    {
-      sprintf(buf, "ellipticAxHex3D_Ref3D%d", i); // puts string into buffer
+  if (p_Ngll<11){
+    for (int i =1; i<7; i++){
+
+      sprintf(buf, "ellipticAxHex3D_Ref3D%d", i);
       BP35kernel3D[i-1] = device.buildKernelFromSource("BP35kernels3D.okl", buf, kernelInfo);
-      //  printf("%s\n", buf); // outputs so you can see it
     }
   }
 
   // initialize with random numbers on Host and Device
   srand48(12345);
+
   randCalloc(device, E*BSIZE*Ngeo, &geo, o_geo);
   randCalloc(device, E*BSIZE, &u, o_u);
   randCalloc(device, E*BSIZE, &Au, o_Au);
@@ -122,84 +101,72 @@ int main(int argc, char **argv){
   // initialize timer
   occa::initTimer(device);
 
-  // queue Ax kernel
   int Niter = 10, it;
+
+  double gflops = Niter* (12*p_Ngll*p_Ngll*p_Ngll*p_Ngll + 15*p_Ngll*p_Ngll*p_Ngll);
 
   for (int i =1;i<11; i++){
 
-    datafloat lambda = 1.;
-device.finish();
+    device.finish();
+
     occa::streamTag startTag = device.tagStream();
-
     for(it=0;it<Niter;++it){
-
       BP35kernel[i-1](E,o_geo, o_D, lambda, o_u, o_Au, o_Autemp);
     }
 
     occa::streamTag stopTag = device.tagStream();
 
-
-
     double elapsed = device.timeBetween(startTag, stopTag);
     printf("\n\nKERNEL %d  ================================================== \n\n", i);
-
     printf("OCCA elapsed time = %g\n", elapsed);
 
-    double gflops = Niter* (12*p_Ngll*p_Ngll*p_Ngll*p_Ngll + 15*p_Ngll*p_Ngll*p_Ngll);
-
     results2D[i-1] = E*gflops/(elapsed*1000*1000*1000);
-      printf("OCCA: estimated gflops = %17.15f\n", results2D[i-1]);
-
+    printf("OCCA: estimated gflops = %17.15f\n", results2D[i-1]);
     printf("OCCA estimated bandwidth = %17.15f GB/s\n", sizeof(datafloat)*Niter*E*9.*(p_Ngll*p_Ngll*p_Ngll)/(elapsed*1024.*1024.*1024));
 
     // compute l2 of data
     o_Au.copyTo(Au);
-    datafloat normAu = 0;
-    int n;
-    for(n=0;n<E*BSIZE;++n)
-      normAu += Au[n]*Au[n];
-    normAu = sqrt(normAu);
 
+    datafloat normAu = 0;
+    for(int n=0;n<E*BSIZE;++n)
+      normAu += Au[n]*Au[n];
+
+    normAu = sqrt(normAu);
     printf("OCCA: normAu = %17.15lf\n", normAu);
   }
 
   if (p_Ngll<11){
     for (int i =1;i<7; i++){
-device.finish();
+
+      device.finish();
+
       occa::streamTag startTag = device.tagStream();
 
-      datafloat lambda = 1.;
       for(it=0;it<Niter;++it){
-
         BP35kernel3D[i-1](E,o_geo, o_D, lambda, o_u, o_Au, o_Autemp);
       }
 
       occa::streamTag stopTag = device.tagStream();
-
-
 
       double elapsed = device.timeBetween(startTag, stopTag);
       printf("\n\n3D KERNEL %d  ================================================== \n\n", i);
 
       printf("OCCA elapsed time = %g\n", elapsed);
 
-      double gflops = Niter* (12*p_Ngll*p_Ngll*p_Ngll*p_Ngll + 15*p_Ngll*p_Ngll*p_Ngll);
       results3D[i-1] = E*gflops/(elapsed*1000*1000*1000);
       printf("OCCA: estimated gflops = %17.15f\n", results3D[i-1]);
-
       printf("OCCA estimated bandwidth = %17.15f GB/s\n", sizeof(datafloat)*Niter*E*9.*(p_Ngll*p_Ngll*p_Ngll)/(elapsed*1024.*1024.*1024));
 
       // compute l2 of data
       o_Au.copyTo(Au);
-      datafloat normAu = 0;
-      int n;
-      for(n=0;n<E*BSIZE;++n)
-        normAu += Au[n]*Au[n];
-      normAu = sqrt(normAu);
 
+      datafloat normAu = 0;
+      for(int n=0;n<E*BSIZE;++n)
+        normAu += Au[n]*Au[n];
+
+      normAu = sqrt(normAu);
       printf("OCCA: normAu = %17.15lf\n", normAu);
     }
-
   }
 
   printf("\n\n ****** ****** *******  SUMMARY ****** ****** ******* \n\n");
@@ -207,22 +174,23 @@ device.finish();
   printf("\n");
   printf("Kernels with 2D thread structure (est. gflops) ===> \n");
   printf("\n");
+
   for (int i=0; i<10; ++i){
     printf(" %16.17f ", results2D[i]);
   }
   printf("\n\n");
+
   if (p_Ngll<11){
 
-  printf("Kernels with 3D thread structure (est. gflops) ===> \n");
-  printf("\n");
-  for (int i=0; i<6; ++i){
-    printf(" %16.17f ", results3D[i]);
-  }
-  printf("\n\n");
-}
+    printf("Kernels with 3D thread structure (est. gflops) ===> \n");
+    printf("\n");
 
+    for (int i=0; i<6; ++i){
+      printf(" %16.17f ", results3D[i]);
+    }
+    printf("\n\n");
+  }
 
   exit(0);
   return 0;
-
 }
