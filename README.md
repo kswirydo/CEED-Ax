@@ -23,17 +23,30 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OCCA_DIR/lib
 
 To run the code in the repo:
 
+## BP1.0
 cd BP10
-make
-./BP10 512 10
-[to simulate mesh with 512 elements and polynomial degree 10]
 
-cd BP30
 make
+
+./BP10 512 10
+
+[to simulate mass-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 12^3 quadrature nodes]
+
+## BP3.0
+cd BP30
+
+make
+
 ./BP30 512 10
-[to simulate mesh with 512 elements and polynomial degree 10]
+
+[to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 12^3 quadrature nodes]
+
+## BP3.5
 
 cd BP35
+
 make
+
 ./BP35 512 10
-[to simulate mesh with 512 elements and polynomial degree 10]
+
+[to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 11^3 quadrature nodes]
