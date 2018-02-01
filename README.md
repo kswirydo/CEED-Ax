@@ -11,14 +11,16 @@ Enter occa directory.
 Type make.
 
 Set environmental variables
+
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PWD}/lib"
 PATH+=":${PWD}/bin"
 
-[set occa_dir]
+export OCCA_DIR=/path/to/folder/occa/
 
 You can also add the commands to your .bashrc
 
 export OCCA_DIR=/path/to/folder/occa/
+
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OCCA_DIR/lib
 
 To run the code in the repo:
