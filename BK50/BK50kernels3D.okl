@@ -1,0 +1,672 @@
+#define cubeThreads                             \
+  for(int k=0; k<p_Ngll; ++k; inner2)		\
+    for(int j=0; j<p_Ngll; ++j; inner1)		\
+      for(int i=0; i<p_Ngll; ++i; inner0)
+
+#if p_Ngll==8 || p_Ngll==16
+#define p_gllPad 1
+#else
+#define p_gllPad 0
+#endif
+
+#define p_G00ID 0
+#define p_G01ID 1
+#define p_G02ID 2
+#define p_G11ID 3
+#define p_G12ID 4
+#define p_G22ID 5
+#define p_GWJID 6
+
+// Kernel 1 - unoptimized baseline kernel
+
+kernel void ellipticAxHex3D_Ref3D1(int Nelements,
+				   datafloat * ggeo,
+				   datafloat *  D,
+				   datafloat lambda,
+				   datafloat *  q,
+				   datafloat *  Aq,
+				   datafloat * Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_D[p_Ngll][p_Ngll];
+
+    exclusive datafloat r_qr, r_qs, r_qt;
+
+    cubeThreads {
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+      datafloat  GwJ;
+      // assumes w*J built into G entries
+      GwJ = ggeo[base+p_GWJID*p_Np];		  	  
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n) {
+        qr += s_D[i][n]*q[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qs += s_D[j][n]*q[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qt += s_D[k][n]*q[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+      }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = GwJ*lambda*q[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G00, G01, G02;
+
+      int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G00 = ggeo[base+p_G00ID*p_Np];
+      G01 = ggeo[base+p_G01ID*p_Np];
+      G02 = ggeo[base+p_G02ID*p_Np];
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G00*r_qr + G01*r_qs + G02*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][i]* Aqtemp[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    // s term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G01, G11, G12;
+      int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G01 = ggeo[base+p_G01ID*p_Np];
+      G11 = ggeo[base+p_G11ID*p_Np];
+      G12 = ggeo[base+p_G12ID*p_Np];
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G01*r_qr + G11*r_qs + G12*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][j]* Aqtemp[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G02, G12, G22;
+
+      int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G02 = ggeo[base+p_G02ID*p_Np];
+      G12 = ggeo[base+p_G12ID*p_Np];
+      G22 = ggeo[base+p_G22ID*p_Np];
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G02*r_qr + G12*r_qs + G22*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][k]* Aqtemp[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;		  
+    }
+  }
+}
+
+// Kernel 2 - const. variables and loop unrolling
+
+kernel void ellipticAxHex3D_Ref3D2(const int Nelements,
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_D[p_Ngll][p_Ngll];
+
+    exclusive datafloat r_qr, r_qs, r_qt;
+
+    cubeThreads {
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      datafloat  GwJ;
+      GwJ = ggeo[base+p_GWJID*p_Np];
+
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n) {
+        qr += s_D[i][n]*q[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qs += s_D[j][n]*q[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qt += s_D[k][n]*q[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+      }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = GwJ*lambda*q[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+    }
+
+    // r term ----->
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G00, G01, G02;
+
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G00 = ggeo[base+p_G00ID*p_Np];
+      G01 = ggeo[base+p_G01ID*p_Np];
+      G02 = ggeo[base+p_G02ID*p_Np];
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G00*r_qr + G01*r_qs + G02*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][i]* Aqtemp[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    // s term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G01, G11, G12;
+
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G01 = ggeo[base+p_G01ID*p_Np];
+      G11 = ggeo[base+p_G11ID*p_Np];
+      G12 = ggeo[base+p_G12ID*p_Np];
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G01*r_qr + G11*r_qs + G12*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][j]* Aqtemp[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat G02, G12, G22;
+
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      G02 = ggeo[base+p_G02ID*p_Np];
+      G12 = ggeo[base+p_G12ID*p_Np];
+      G22 = ggeo[base+p_G22ID*p_Np];
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = G02*r_qr + G12*r_qs + G22*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][k]* Aqtemp[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+  }
+}
+
+// Kernel 3 - geometric factors in registers, fetched only once
+
+kernel void ellipticAxHex3D_Ref3D3(const int Nelements,
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_D[p_Ngll][p_Ngll];
+    exclusive datafloat r_G00, r_G01, r_G02, r_G11, r_G12, r_G22, r_GwJ;
+    exclusive datafloat r_qr, r_qs, r_qt;
+
+    cubeThreads {
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      r_GwJ = ggeo[base+p_GWJID*p_Np];
+
+      r_G00 = ggeo[base+p_G00ID*p_Np];
+      r_G01 = ggeo[base+p_G01ID*p_Np];
+      r_G02 = ggeo[base+p_G02ID*p_Np];
+
+      r_G11 = ggeo[base+p_G11ID*p_Np];
+      r_G12 = ggeo[base+p_G12ID*p_Np];
+      r_G22 = ggeo[base+p_G22ID*p_Np];
+
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n) {
+        qr += s_D[i][n]*q[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qs += s_D[j][n]*q[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qt += s_D[k][n]*q[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+      }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_GwJ*lambda*q[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+    }
+
+    // r term ----->
+    barrier(localMemFence);
+
+    cubeThreads {
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_G00*r_qr + r_G01*r_qs + r_G02*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][i]* Aqtemp[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    // s term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_G01*r_qr + r_G11*r_qs + r_G12*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][j]* Aqtemp[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_G02*r_qr + r_G12*r_qs + r_G22*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][k]* Aqtemp[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] += tmp;
+    }
+  }
+}
+
+// Kernel 4 - less global storage
+
+kernel void ellipticAxHex3D_Ref3D4(const int Nelements,
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_D[p_Ngll][p_Ngll];
+    exclusive datafloat r_G00, r_G01, r_G02, r_G11, r_G12, r_G22, r_GwJ;
+    exclusive datafloat r_qr, r_qs, r_qt, r_Aq;
+
+    cubeThreads {
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      r_GwJ = ggeo[base+p_GWJID*p_Np];
+
+      r_G00 = ggeo[base+p_G00ID*p_Np];
+      r_G01 = ggeo[base+p_G01ID*p_Np];
+      r_G02 = ggeo[base+p_G02ID*p_Np];
+
+      r_G11 = ggeo[base+p_G11ID*p_Np];
+      r_G12 = ggeo[base+p_G12ID*p_Np];
+      r_G22 = ggeo[base+p_G22ID*p_Np];
+
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n) {
+        qr += s_D[i][n]*q[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qs += s_D[j][n]*q[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+        qt += s_D[k][n]*q[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+      }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+
+      r_Aq = r_GwJ*lambda*q[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+    }
+
+    // r term ----->
+    barrier(localMemFence);
+
+    cubeThreads {
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_G00*r_qr + r_G01*r_qs + r_G02*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][i]* Aqtemp[n + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      r_Aq += tmp;
+    }
+
+    // s term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_G01*r_qr + r_G11*r_qs + r_G12*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][j]* Aqtemp[i + n*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np];
+
+      r_Aq += tmp;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      Aqtemp[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np]  = r_G02*r_qr + r_G12*r_qs + r_G22*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      for(int n=0; n<p_Ngll; ++n)
+        tmp += s_D[n][k]* Aqtemp[i + j*p_Ngll + n*p_Ngll*p_Ngll + e*p_Np];
+
+      r_Aq+=tmp;
+
+      Aq[i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np] = r_Aq;
+    }
+  }
+}
+
+// Kernel 5 - q in shared
+
+kernel void ellipticAxHex3D_Ref3D5(const int Nelements,
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_q[p_Ngll][p_Ngll][p_Ngll];
+    shared datafloat s_D[p_Ngll][p_Ngll];
+
+    exclusive datafloat r_qr, r_qs, r_qt, r_Aq;
+    exclusive datafloat r_G00, r_G01, r_G02, r_G11, r_G12, r_G22, r_GwJ;
+
+    // prefetch q(:,:,:,e) to shared
+    cubeThreads {
+      const int base = i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np;
+
+      s_q[k][j][i] = q[base];
+
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      r_GwJ = ggeo[base+p_GWJID*p_Np];
+
+      r_G00 = ggeo[base+p_G00ID*p_Np];
+      r_G01 = ggeo[base+p_G01ID*p_Np];
+      r_G02 = ggeo[base+p_G02ID*p_Np];
+
+      r_G11 = ggeo[base+p_G11ID*p_Np];
+      r_G12 = ggeo[base+p_G12ID*p_Np];
+      r_G22 = ggeo[base+p_G22ID*p_Np];
+
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n) {
+          qr += s_D[i][n]*s_q[k][j][n];
+          qs += s_D[j][n]*s_q[k][n][i];
+          qt += s_D[k][n]*s_q[n][j][i];
+        }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+
+      r_Aq = r_GwJ*lambda*s_q[k][j][i];
+    }
+
+    // r term ----->
+    barrier(localMemFence);
+
+    cubeThreads {
+      s_q[k][j][i] = r_G00*r_qr + r_G01*r_qs + r_G02*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n)
+          tmp += s_D[n][i]*s_q[k][j][n];
+
+      r_Aq += tmp;
+    }
+
+    // s term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+      s_q[k][j][i] = r_G01*r_qr + r_G11*r_qs + r_G12*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n)
+          tmp += s_D[n][j]*s_q[k][n][i];
+
+      r_Aq += tmp;
+      int base2 =  e*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+      Aq[base2] = r_Aq;
+    }
+
+    // t term ---->
+    barrier(localMemFence);
+
+    cubeThreads {
+      s_q[k][j][i] = r_G02*r_qr + r_G12*r_qs + r_G22*r_qt;
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n)
+          tmp += s_D[n][k]*s_q[n][j][i];
+
+      r_Aq += tmp;
+
+      int base =  e*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+      Aq[base] = r_Aq;
+    }
+  }
+}
+
+// Kernel 6 - multiple shared arrays
+
+kernel void ellipticAxHex3D_Ref3D6(const int Nelements,
+				   const datafloat * restrict ggeo,
+				   const datafloat * restrict D,
+				   const datafloat lambda,
+				   const datafloat * restrict q,
+				   datafloat * restrict Aq,
+				   datafloat * restrict Aqtemp){
+
+  for(int e=0; e<Nelements; ++e; outer0) {
+
+    shared datafloat s_q[p_Ngll][p_Ngll][p_Ngll];
+    shared datafloat s_q1[p_Ngll][p_Ngll][p_Ngll];
+    shared datafloat s_q2[p_Ngll][p_Ngll][p_Ngll];
+    shared datafloat s_q3[p_Ngll][p_Ngll][p_Ngll];
+    shared datafloat s_D[p_Ngll][p_Ngll];
+
+    exclusive datafloat r_qr, r_qs, r_qt, r_Aq;
+    exclusive datafloat r_G00, r_G01, r_G02, r_G11, r_G12, r_G22, r_GwJ;
+
+    // prefetch q(:,:,:,e) to shared
+    cubeThreads {
+      const int base = i + j*p_Ngll + k*p_Ngll*p_Ngll + e*p_Np;
+
+      s_q[k][j][i] = q[base];
+
+      if(k==0) // fetch D to shared
+        s_D[j][i] = D[j*p_Ngll+i];
+    }
+
+    barrier(localMemFence);
+
+    cubeThreads {
+      const int base = e*p_Ngeo*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+
+      // assumes w*J built into G entries
+      r_GwJ = ggeo[base+p_GWJID*p_Np];
+
+      r_G00 = ggeo[base+p_G00ID*p_Np];
+      r_G01 = ggeo[base+p_G01ID*p_Np];
+      r_G02 = ggeo[base+p_G02ID*p_Np];
+
+      r_G11 = ggeo[base+p_G11ID*p_Np];
+      r_G12 = ggeo[base+p_G12ID*p_Np];
+      r_G22 = ggeo[base+p_G22ID*p_Np];
+
+      datafloat qr = 0.f, qs = 0.f, qt = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n) {
+          qr += s_D[i][n]*s_q[k][j][n];
+          qs += s_D[j][n]*s_q[k][n][i];
+          qt += s_D[k][n]*s_q[n][j][i];
+        }
+
+      r_qr = qr; r_qs = qs; r_qt = qt;
+      s_q1[k][j][i] = r_G00*r_qr + r_G01*r_qs + r_G02*r_qt;
+      s_q2[k][j][i] = r_G01*r_qr + r_G11*r_qs + r_G12*r_qt;
+      s_q3[k][j][i] = r_G02*r_qr + r_G12*r_qs + r_G22*r_qt;
+
+      r_Aq = r_GwJ*lambda*s_q[k][j][i];
+    }
+
+    // r term ----->
+    barrier(localMemFence);
+
+    cubeThreads {
+      datafloat tmp = 0.f;
+
+      occaUnroll(p_Ngll)
+        for(int n=0; n<p_Ngll; ++n){
+          tmp += s_D[n][i]*s_q1[k][j][n];
+          tmp += s_D[n][j]*s_q2[k][n][i];
+          tmp += s_D[n][k]*s_q3[n][j][i];
+        }
+
+      r_Aq += tmp;
+
+      int base =  e*p_Np + k*p_Ngll*p_Ngll + j*p_Ngll + i;
+      Aq[base] = r_Aq;
+    }
+  }
+}
