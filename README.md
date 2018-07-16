@@ -1,5 +1,8 @@
 # CEED-Ax
 
+
+## Install OCCA
+
 The code needs OCCA to run (https://github.com/libocca/occa  )
 
 Install stable version of OCCA first.
@@ -26,7 +29,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OCCA_DIR/lib
 
 To run the code in the repo:
 
-## BK1.0
+## Running BK1.0
 cd BK10
 
 make
@@ -35,7 +38,7 @@ make
 
 [to simulate mass-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 12^3 quadrature nodes]
 
-## BK3.0
+## Running BK3.0
 cd BK30
 
 make
@@ -44,7 +47,7 @@ make
 
 [to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 12^3 quadrature nodes]
 
-## BK5.0
+## Running BK5.0
 
 cd BK50
 
