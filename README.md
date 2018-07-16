@@ -44,12 +44,12 @@ make
 
 [to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 12^3 quadrature nodes]
 
-## BP5.0
+## BK5.0
 
-cd BP50
+cd BK50
 
 make
 
-./BP50 512 10
+./BK50 512 10
 
 [to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 11^3 quadrature nodes]
