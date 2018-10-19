@@ -1,6 +1,5 @@
 # CEED-Ax
 
-
 ## Install OCCA
 
 The code needs OCCA to run (https://github.com/libocca/occa  )
@@ -56,3 +55,7 @@ make
 ./BK50 512 10
 
 [to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 11^3 quadrature nodes]
+
+## Problems?
+
+Email katarzyna.swirydowicz@nrel.gov
