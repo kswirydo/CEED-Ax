@@ -56,6 +56,13 @@ make
 
 [to simulate stiffness-matrix-vector multiplication on a mesh with 512 elements and polynomial degree 10 using 11^3 quadrature nodes]
 
+## What to expect
+
+ The results vary depending on the hardware. For example, on an NVIDIA Tesla P100 and V100 we expect the results to be close to the roofline based on device-to-device data copy but on Fermi and Kepler class cards the performance is far from the peak.
+ Examples:
+ Results on K40:
+ Results on V100:
+
 ## Problems?
 
 Email katarzyna.swirydowicz@nrel.gov
