@@ -59,8 +59,8 @@ make
 ## What to expect
 
  The results vary depending on the hardware. For example, on an NVIDIA Tesla P100 and V100 we expect the results to be close to the roofline based on device-to-device data copy but on Fermi and Kepler class cards the performance is far from the peak.
- Examples:
- Results on K40:
+ Examples - 
+ Results on K40: [a relative link](BK1Fig4096STANDALONEk40.pdf)
  Results on V100:
 
 ## Problems?
